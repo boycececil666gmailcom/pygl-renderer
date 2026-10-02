@@ -28,12 +28,12 @@ def main():
     window = Window(
         config.scr_width,
         config.scr_height,
-        "Antigravity OpenGL Engine (Modular)",
+        "Antigravity WebGPU Engine",
     )
     renderer = Renderer(window, config)
 
     # 3. Load native glTF 2.0 file, shaders, and camera
-    shader = Shader("shaders/shader.vert", "shaders/shader.frag")
+    shader = Shader("shaders/shader.wgsl")
     gltf = GLTF2.load(model_path)
     base_dir = os.path.dirname(model_path)
 

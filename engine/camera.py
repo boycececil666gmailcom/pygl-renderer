@@ -6,7 +6,7 @@ import glm
 
 # region Camera Class
 class Camera:
-    """Encapsulates 3D camera properties and transformation matrices."""
+    """Encapsulates 3D camera properties and transformation matrices for WebGPU."""
 
     def __init__(
         self,
@@ -29,8 +29,8 @@ class Camera:
         return glm.lookAt(self.pos, self.target, self.up)
 
     def get_projection_matrix(self, aspect_ratio: float) -> glm.mat4:
-        """Returns the Perspective Projection matrix."""
-        return glm.perspective(glm.radians(self.fov), aspect_ratio, self.near, self.far)
+        """Returns the Perspective Projection matrix with WebGPU [0, 1] clip space depth."""
+        return glm.perspectiveRH_ZO(glm.radians(self.fov), aspect_ratio, self.near, self.far)
 
 
 # endregion

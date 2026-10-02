@@ -1,6 +1,6 @@
 [app]
 # Application title
-title = PyGL Renderer
+title = WebGPU Renderer
 
 # Package name
 package.name = pyglrenderer
@@ -12,13 +12,13 @@ package.domain = org.antigravity
 source.dir = .
 
 # File extensions to package into the APK
-source.include_exts = py,png,jpg,jpeg,glsl,vert,frag,gltf,bin,json,env
+source.include_exts = py,png,jpg,jpeg,wgsl,gltf,bin,json,env
 
 # Application version
 version = 0.1.0
 
 # Application dependencies for Android NDK compilation
-requirements = python3,pysdl2,pyopengl,numpy,pillow,pygltflib,pyglm,python-dotenv
+requirements = python3,pysdl2,wgpu,numpy,pillow,pygltflib,pyglm,python-dotenv
 
 # Orientation and display
 orientation = landscape

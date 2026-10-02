@@ -19,7 +19,7 @@ fi
 
 # Step 2/2: Launching Renderer with Toyota Supra glTF
 echo -e "\n${CYAN}========================================================${NC}"
-echo -e "${GREEN}>>> [2/2] [$(basename "$0")] Launching OpenGL Engine with Toyota Supra GLTF${NC}"
+echo -e "${GREEN}>>> [2/2] [$(basename "$0")] Launching WebGPU Engine with Toyota Supra GLTF${NC}"
 echo -e "${CYAN}========================================================${NC}\n"
 
 ./venv/Scripts/python main.py gltf/toyota_supra.gltf
