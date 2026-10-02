@@ -1,5 +1,7 @@
-#region Imports
+# region Imports
 import sys
+
+import glm
 from OpenGL.GL import (
     GL_COMPILE_STATUS,
     GL_FALSE,
@@ -26,10 +28,11 @@ from OpenGL.GL import (
     glUniformMatrix4fv,
     glUseProgram,
 )
-import glm
-#endregion
 
-#region Shader Program
+# endregion
+
+
+# region Shader Program
 class Shader:
     """OpenGL ES 3.0 shader program management with uniform caching."""
 
@@ -102,4 +105,6 @@ class Shader:
         glDeleteShader(vs)
         glDeleteShader(fs)
         return program
-#endregion
+
+
+# endregion

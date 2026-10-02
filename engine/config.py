@@ -1,5 +1,6 @@
 # region Imports
 import os
+from pathlib import Path
 
 import glm
 from dotenv import load_dotenv
@@ -10,8 +11,9 @@ from dotenv import load_dotenv
 # region Configuration Class
 class Config:
     def __init__(self):
-        # Load environment variables from .env
-        load_dotenv()
+        # Load environment variables from project root .env
+        env_path = Path(__file__).resolve().parent.parent / ".env"
+        load_dotenv(dotenv_path=env_path)
 
         # Window & Graphics API settings
         self.scr_width = int(os.environ.get("SCR_WIDTH", 1280))
