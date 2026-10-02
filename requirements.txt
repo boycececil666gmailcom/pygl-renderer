@@ -1,7 +1,0 @@
-glfw
-PyOpenGL
-numpy
-pyglm
-python-dotenv
-Pillow
-pygltflib
