@@ -1,30 +1,56 @@
+# region Imports
 import time
-import os
+
 import glm
-from OpenGL.GL import *
+from OpenGL.GL import (
+    GL_BLEND,
+    GL_COLOR_BUFFER_BIT,
+    GL_DEPTH_BUFFER_BIT,
+    GL_DEPTH_TEST,
+    GL_FALSE,
+    GL_ONE_MINUS_SRC_ALPHA,
+    GL_SRC_ALPHA,
+    GL_TRIANGLES,
+    GL_TRUE,
+    GL_UNSIGNED_INT,
+    glBindVertexArray,
+    glBlendFunc,
+    glClear,
+    glClearColor,
+    glDepthMask,
+    glDrawArrays,
+    glDrawElements,
+    glEnable,
+)
 from pygltflib import GLTF2
 
-from engine.window import Window
-from engine.shader import Shader
 from engine.camera import Camera
 from engine.config import Config
 from engine.gltf_utils import GLTFBufferCache, get_node_transform_matrix
+from engine.shader import Shader
+from engine.window import Window
 
+# endregion
+
+
+# region Renderer Class
 class Renderer:
-    """Native glTF 2.0 OpenGL Renderer directly consuming pygltflib instances."""
+    """glTF 2.0 OpenGL ES 3.0 Renderer."""
 
     def __init__(self, window: Window, config: Config):
         self.window = window
         self.config = config
         self.clear_color = (0.094, 0.094, 0.106, 1.0)
         self._buffer_caches = {}
-        
+
         # Configure global OpenGL pipeline parameters
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-    def render_frame(self, shader: Shader, gltf: GLTF2, camera: Camera, base_dir: str = ".") -> None:
+    def render_frame(
+        self, shader: Shader, gltf: GLTF2, camera: Camera, base_dir: str = "."
+    ) -> None:
         """Executes a single render frame pass directly from a pygltflib.GLTF2 instance."""
         # 1. Initialize GPU buffers for gltf if not cached
         gltf_id = id(gltf)
@@ -124,3 +150,6 @@ class Renderer:
             remaining = self.config.target_frame_time - duration
             if remaining > 0:
                 time.sleep(remaining)
+
+
+# endregion

@@ -46,7 +46,7 @@ sequenceDiagram
     Note over User, Cfg: Phase 1 - Initialization
     User->>Main: python main.py gltf/toyota_supra.gltf
     Main->>Cfg: Load .env (SCR_WIDTH, TARGET_FPS, CAM_POS, LIGHT_DIR, ...)
-    Main->>Win: Create GLFW window + OpenGL 3.3 Core context
+    Main->>Win: Create GLFW window + OpenGL ES 3.0 context
     Main->>Shd: Compile shader.vert + shader.frag, link GLSL program
     Main->>Cam: Construct Camera (pos, target, fov, near, far)
     Main->>Rdr: Construct Renderer (glEnable DEPTH_TEST + BLEND)
@@ -116,7 +116,7 @@ flowchart TB
     end
 
     subgraph WindowLayer["Window and Context"]
-        Win["Window\n(GLFW 3.3 Core Profile)\nKeyboard Input, Swap Buffers"]
+        Win["Window\n(GLFW OpenGL ES 3.0)\nKeyboard Input, Swap Buffers"]
     end
 
     subgraph ShaderLayer["Shader Pipeline"]
@@ -140,7 +140,7 @@ flowchart TB
         TexLoad["Texture Loader\n(Pillow -> OpenGL)\nMipmap Generation\nGL_LINEAR_MIPMAP_LINEAR"]
     end
 
-    subgraph GPU["GPU (OpenGL 3.3 Core)"]
+    subgraph GPU["GPU (OpenGL ES 3.0)"]
         VAO["VAO\nAttr 0: Position\nAttr 1: Normal\nAttr 2: UV"]
         EBO["EBO\nIndexed Triangles"]
         Tex["GL_TEXTURE_2D\nMipmapped RGBA"]

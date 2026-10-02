@@ -1,11 +1,31 @@
+# region Imports
 import os
-import numpy as np
+
 import glm
-from OpenGL.GL import *
+import numpy as np
+from OpenGL.GL import (
+    GL_ARRAY_BUFFER,
+    GL_ELEMENT_ARRAY_BUFFER,
+    GL_FALSE,
+    GL_FLOAT,
+    GL_STATIC_DRAW,
+    glBindBuffer,
+    glBindVertexArray,
+    glBufferData,
+    glDeleteBuffers,
+    glDeleteVertexArrays,
+    glEnableVertexAttribArray,
+    glGenBuffers,
+    glGenVertexArrays,
+    glVertexAttribPointer,
+)
 from pygltflib import GLTF2
 
 from engine.material import Material
 
+# endregion
+
+# region Component Mappings
 COMPONENT_TYPES = {
     5120: np.int8,
     5121: np.uint8,
@@ -24,7 +44,10 @@ TYPE_ELEMENTS = {
     "MAT3": 9,
     "MAT4": 16,
 }
+# endregion
 
+
+# region Buffer Extraction
 def get_buffer_data(gltf: GLTF2, buffer_idx: int, base_dir: str = ".") -> bytes:
     buffer = gltf.buffers[buffer_idx]
     if buffer.uri is None:
@@ -37,6 +60,7 @@ def get_buffer_data(gltf: GLTF2, buffer_idx: int, base_dir: str = ".") -> bytes:
             with open(bin_path, "rb") as f:
                 return f.read()
         return gltf.get_data_from_buffer_uri(buffer.uri)
+
 
 def extract_accessor_data(gltf: GLTF2, accessor_idx: int, base_dir: str = ".") -> np.ndarray:
     if accessor_idx is None or accessor_idx < 0:
@@ -65,54 +89,73 @@ def extract_accessor_data(gltf: GLTF2, accessor_idx: int, base_dir: str = ".") -
 
     return arr
 
+
 def get_node_transform_matrix(node) -> glm.mat4:
     """Build local transformation matrix (glm.mat4) for a glTF Node."""
     if hasattr(node, "matrix") and node.matrix is not None and len(node.matrix) == 16:
         m = node.matrix
         return glm.mat4(
-            m[0], m[1], m[2], m[3],
-            m[4], m[5], m[6], m[7],
-            m[8], m[9], m[10], m[11],
-            m[12], m[13], m[14], m[15]
+            m[0],
+            m[1],
+            m[2],
+            m[3],
+            m[4],
+            m[5],
+            m[6],
+            m[7],
+            m[8],
+            m[9],
+            m[10],
+            m[11],
+            m[12],
+            m[13],
+            m[14],
+            m[15],
         )
-    
+
     mat = glm.mat4(1.0)
-    
+
     if hasattr(node, "translation") and node.translation is not None:
         t = node.translation
         mat = glm.translate(mat, glm.vec3(t[0], t[1], t[2]))
-        
+
     if hasattr(node, "rotation") and node.rotation is not None:
         r = node.rotation
         quat = glm.quat(r[3], r[0], r[1], r[2])
         mat = mat * glm.mat4_cast(quat)
-        
+
     if hasattr(node, "scale") and node.scale is not None:
         s = node.scale
         mat = glm.scale(mat, glm.vec3(s[0], s[1], s[2]))
-        
+
     return mat
 
+
+# endregion
+
+
+# region Buffer Cache
 class GLTFBufferCache:
     """Manages OpenGL VAO/VBO/EBO GPU buffers for a native pygltflib.GLTF2 scene."""
+
     def __init__(self, gltf: GLTF2, base_dir: str = "."):
         self.gltf = gltf
         self.base_dir = base_dir
         self.materials = []
         self.gpu_primitives = {}
-        
+
         self._init_materials()
         self._init_gpu_buffers()
 
     def _init_materials(self):
         if not self.gltf.materials:
             return
-            
+
         for mat_data in self.gltf.materials:
             mat = Material.from_dict(mat_data.to_dict())
             mat.texture_id = 0
             mat.has_texture = False
-            
+
             pbr = getattr(mat, "pbrMetallicRoughness", None)
             if pbr is not None and hasattr(pbr, "baseColorTexture") and pbr.baseColorTexture:
                 tex_idx = pbr.baseColorTexture.index
@@ -130,7 +173,7 @@ class GLTFBufferCache:
     def _init_gpu_buffers(self):
         if not self.gltf.meshes:
             return
-            
+
         for mesh_idx, mesh in enumerate(self.gltf.meshes):
             for prim_idx, primitive in enumerate(mesh.primitives):
                 pos_idx = primitive.attributes.POSITION
@@ -138,8 +181,12 @@ class GLTFBufferCache:
                 if positions is None:
                     continue
 
-                normals = extract_accessor_data(self.gltf, primitive.attributes.NORMAL, self.base_dir)
-                uvs = extract_accessor_data(self.gltf, primitive.attributes.TEXCOORD_0, self.base_dir)
+                normals = extract_accessor_data(
+                    self.gltf, primitive.attributes.NORMAL, self.base_dir
+                )
+                uvs = extract_accessor_data(
+                    self.gltf, primitive.attributes.TEXCOORD_0, self.base_dir
+                )
                 indices = extract_accessor_data(self.gltf, primitive.indices, self.base_dir)
 
                 mat = None
@@ -148,12 +195,12 @@ class GLTFBufferCache:
                 else:
                     mat = Material()
 
-                pos_data = positions.astype('float32').reshape(-1)
+                pos_data = positions.astype("float32").reshape(-1)
                 vertex_count = len(pos_data) // 3
 
                 has_indices = indices is not None and len(indices) > 0
                 if has_indices:
-                    idx_data = indices.astype('uint32').reshape(-1)
+                    idx_data = indices.astype("uint32").reshape(-1)
                     count = len(idx_data)
                 else:
                     idx_data = None
@@ -172,7 +219,7 @@ class GLTFBufferCache:
                 # VBO 1: Normal
                 VBO_normal = 0
                 if normals is not None and len(normals) > 0:
-                    norm_data = normals.astype('float32').reshape(-1)
+                    norm_data = normals.astype("float32").reshape(-1)
                     VBO_normal = glGenBuffers(1)
                     glBindBuffer(GL_ARRAY_BUFFER, VBO_normal)
                     glBufferData(GL_ARRAY_BUFFER, norm_data.nbytes, norm_data, GL_STATIC_DRAW)
@@ -182,7 +229,7 @@ class GLTFBufferCache:
                 # VBO 2: UV
                 VBO_uv = 0
                 if uvs is not None and len(uvs) > 0:
-                    uv_data = uvs.astype('float32').reshape(-1)
+                    uv_data = uvs.astype("float32").reshape(-1)
                     VBO_uv = glGenBuffers(1)
                     glBindBuffer(GL_ARRAY_BUFFER, VBO_uv)
                     glBufferData(GL_ARRAY_BUFFER, uv_data.nbytes, uv_data, GL_STATIC_DRAW)
@@ -194,7 +241,12 @@ class GLTFBufferCache:
                 if has_indices:
                     EBO = glGenBuffers(1)
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx_data.nbytes, idx_data, GL_STATIC_DRAW)
+                    glBufferData(
+                        GL_ELEMENT_ARRAY_BUFFER,
+                        idx_data.nbytes,
+                        idx_data,
+                        GL_STATIC_DRAW,
+                    )
 
                 glBindBuffer(GL_ARRAY_BUFFER, 0)
                 glBindVertexArray(0)
@@ -207,7 +259,7 @@ class GLTFBufferCache:
                     "EBO": EBO,
                     "count": count,
                     "has_indices": has_indices,
-                    "material": mat
+                    "material": mat,
                 }
 
     def delete(self):
@@ -223,3 +275,6 @@ class GLTFBufferCache:
             if prim["material"]:
                 prim["material"].delete()
         self.gpu_primitives.clear()
+
+
+# endregion

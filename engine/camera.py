@@ -1,5 +1,10 @@
+# region Imports
 import glm
 
+# endregion
+
+
+# region Camera Class
 class Camera:
     """Encapsulates 3D camera properties and transformation matrices."""
 
@@ -10,7 +15,7 @@ class Camera:
         up: glm.vec3 = glm.vec3(0.0, 1.0, 0.0),
         fov: float = 45.0,
         near: float = 0.1,
-        far: float = 100.0
+        far: float = 100.0,
     ):
         self.pos = pos
         self.target = target
@@ -26,3 +31,6 @@ class Camera:
     def get_projection_matrix(self, aspect_ratio: float) -> glm.mat4:
         """Returns the Perspective Projection matrix."""
         return glm.perspective(glm.radians(self.fov), aspect_ratio, self.near, self.far)
+
+
+# endregion

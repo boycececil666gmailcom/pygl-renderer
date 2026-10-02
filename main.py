@@ -1,25 +1,35 @@
 #!/usr/bin/env python
-import sys
+# region Imports
 import os
+import sys
 import time
+
 from pygltflib import GLTF2
 
-from engine import Config, Window, Shader, Camera, Renderer
+from engine import Camera, Config, Renderer, Shader, Window
 
+# endregion
+
+
+# region Main Entrypoint
 def main():
     # 1. Require 3D model glTF file path argument
     if len(sys.argv) < 2:
-        print("Usage: python main.py <path_to_gltf_file>")
+        print("[Main-Run] Usage: python main.py <path_to_gltf_file>")
         sys.exit(1)
 
     model_path = sys.argv[1]
     if not os.path.exists(model_path):
-        print(f"Error: Model file '{model_path}' not found.")
+        print(f"[Main-Run] Error: Model file '{model_path}' not found.")
         sys.exit(1)
 
     # 2. Load configuration and initialize context
     config = Config()
-    window = Window(config.scr_width, config.scr_height, "Antigravity OpenGL Engine (Modular)")
+    window = Window(
+        config.scr_width,
+        config.scr_height,
+        "Antigravity OpenGL Engine (Modular)",
+    )
     renderer = Renderer(window, config)
 
     # 3. Load native glTF 2.0 file, shaders, and camera
@@ -32,11 +42,11 @@ def main():
         target=config.cam_target,
         fov=config.cam_fov,
         near=config.cam_near,
-        far=config.cam_far
+        far=config.cam_far,
     )
 
-    print(f"Loaded Native glTF 2.0: {model_path}")
-    print(f"Target Frame Rate: {config.target_fps} FPS")
+    print(f"[Main-Run] Loaded Native glTF 2.0: {model_path}")
+    print(f"[Main-Run] Target Frame Rate: {config.target_fps} FPS")
 
     # 4. Main Rendering Loop
     try:
@@ -54,5 +64,7 @@ def main():
 
     return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
+# endregion
